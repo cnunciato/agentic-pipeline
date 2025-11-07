@@ -5,55 +5,51 @@ AI-powered automation for Linear issues and Buildkite builds. Uses Claude AI age
 ## Features
 
 - **Analyze Requests**: Triages Linear support issues, provides analysis for complex problems, and implements fixes for simple ones
-- **Complete Tasks**: Implements Linear tasks labeled `first-draft` and creates draft pull requests
+- **Complete Tasks**: Implements Linear tasks labeled `buildsworth-analysis` and creates draft pull requests
 - **Fix Builds**: Automatically fixes failing CI builds triggered by GitHub or Buildkite webhooks
 - **Fix Bugsnag Errors**: Automatically analyzes and fixes production errors when Bugsnag detects error spikes
 
 ## Dependencies
 
-### API Keys
-- **Linear API Token**: Read issues, create/update comments, update status
-- **GitHub Token**: Fine-grained PAT with `repo` and `pull_request` read/write scope
-- **Buildkite API Token**: Read builds, jobs, logs, and pipelines
-- **Anthropic Claude API**: Via Buildkite Hosted Models (`BUILDKITE_AGENT_ENDPOINT/ai/anthropic`)
-- **Bugsnag API Token**: Read errors/events, create comments (only for error fixing workflow)
+It'd be good to provide instructions on how/where to get these.
 
 ### External Systems
 - **Linear**: Project management and issue tracking
 - **GitHub**: Code repository, PR management, CI status checks
-- **Buildkite**: CI/CD platform with webhook triggers and Hosted Models enabled
 - **Bugsnag**: Error monitoring and spike detection
 
+### API Keys
+- **Linear API Token**: "Read" permissions
+- **GitHub Token**: Fine-grained PAT with `repo` and `pull_request` read/write scope
+- **Buildkite API Token**: `read_builds`, `read_build_logs`, and `read_pipelines` (anything else?)
+- **Bugsnag API Token**: Just create it. (It doesn't have a scope.)
+- Optionally, Anthropic API token, if you aren't using hosted agents?
+
 ### Infrastructure
-- **Buildkite Pipeline**: With Docker Compose plugin support
-- **Buildkite Agent**: With access to Hosted Models and sufficient resources
+- **Buildkite Pipeline**: With Docker Compose plugin support (this is baked in, right?)
+- **Buildkite Agent**: With access to Hosted Models and sufficient resources (this is also built-in, right?)
+
+Should we instead say "Buildkite hosted agents and hosted models? Or if that isn't a requirement, mention that hosted agents does this automatically?
 
 ### Webhook Configuration
 
 Trigger IDs are configured as environment variables in `.buildkite/pipeline.yml`.
 
+^ We should clarify that you have to do this in the UI yourself, by copying the values from the URL and pasting them into the YAML. (This is also a bit of a weird thing to have to do, but I get it, since the pipeline handles multiple webhook callbacks. Can we use the names instead? If we could give them default names, and fetch those names, it'd make the setup work much less onerous.)
+
 #### Buildkite Pipeline Triggers
 Create webhook triggers in Buildkite Pipeline Settings with trigger IDs matching the environment variables above. You can customize the trigger IDs by modifying the environment variables in `.buildkite/pipeline.yml`.
 
 #### External Webhook Sources
-Configure webhooks in external services to POST to your Buildkite pipeline webhook URL with the appropriate trigger ID:
+Configure webhooks in external services to POST to your Buildkite pipeline webhook URL.
+
+These should have step-by-step setup instructions.
 
 **Linear**:
-- **Events**: Issue created, Issue updated
-- **Filter**: Issues with `first-draft` label
-- **Payload fields**: `action`, `data.id`, `data.title`, `data.description`, `data.state.name`, `data.labels[].name`
-- **Target trigger**: Use `COMPLETE_TASK_TRIGGER_ID` for task completion or `ANALYZE_REQUEST_TRIGGER_ID` for analysis
+- **Events**: Under Data change events, choose "Issues". (You can't specify individual issue event types, only "Issues" — it's all or nothing.)
 
 **GitHub**:
-- **Events**: Check suite/run failures
-- **Payload fields**: PR number, repository, commit SHA, check status
-- **Target trigger**: Use `FIX_BUILD_GITHUB_TRIGGER_ID`
-
-**Buildkite**:
-- **Events**: Build state changed (filter for `failed` state)
-- **Filter**: PRs with `fix-build` label
-- **Payload fields**: Build URL, build state, build number, branch, commit
-- **Target trigger**: Use `FIX_BUILD_BUILDKITE_TRIGGER_ID`
+- **Events**: Choose "Pull requests". That's all that's needed. (We'll be looking specifically for the `pull_request.labeled` event and for a label named `fix-build`.)
 
 **Bugsnag**:
 - **Events**: `projectSpiking` (error spike detection)

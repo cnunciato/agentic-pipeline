@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-if [[ "${BUILDKITE_SOURCE}" != "webhook" ]]; then
+if [[ "${BUILDKITE_SOURCE:-}" != "webhook" || -z "${BUILDKITE_TRIGGER_ID:-}" ]]; then
   echo "Not a webhook trigger, exiting"
   exit 0
 fi

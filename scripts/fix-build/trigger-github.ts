@@ -279,7 +279,7 @@ async function main() {
   const failedBuild = await findFailedBuildForBranch(
     prBranch,
     orgSlug,
-    pipelineSlug,
+    pipelineSlug.replace(".", "-dot-"),
     prHeadCommit,
   );
 
