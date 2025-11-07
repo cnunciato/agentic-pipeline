@@ -66,7 +66,7 @@ Configure webhooks in external services to POST to your Buildkite pipeline webho
 2. Configure the following secrets in Buildkite Secrets:
    - `LINEAR_API_TOKEN`: Linear API token with read and comment permissions
    - `GITHUB_TOKEN`: GitHub Fine Grained Personal Access Token with `repo` and `pull_request` read/write scope
-   - `BUILDKITE_API_TOKEN`: Buildkite API token for build access
+   - `API_TOKEN_BUILDKITE`: Buildkite API token for build access
    - `BUGSNAG_API_TOKEN`: (Optional) Bugsnag API token for error analysis and commenting
 3. Create Pipeline Triggers in Project Settings
 
